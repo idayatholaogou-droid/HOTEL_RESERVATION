@@ -3,4 +3,5 @@ export class CreateChambreDto {
   etage: number;
   statut: string;
   id_type: number;
+  image?: string;
 }

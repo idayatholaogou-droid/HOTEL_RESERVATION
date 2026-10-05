@@ -21,7 +21,10 @@ export class Chambre {
   @Column()
   statut: string;
 
-  @ManyToOne(() => TypeChambre, { nullable: false })
+  @Column({ nullable: true })
+  image: string;
+
+  @ManyToOne(() => TypeChambre, { nullable: false, eager: true })
   @JoinColumn({ name: 'id_type' })
   type: TypeChambre;
 }
