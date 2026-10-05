@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API_URL } from '../api.js'
+import { NOM_HOTEL } from '../hotel.js'
 
 export default function Login() {
   const [login, setLogin] = useState('')
@@ -31,24 +32,28 @@ export default function Login() {
   }
 
   return (
-    <div>
-      <h1>Connexion</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Login</label>
-          <input value={login} onChange={(e) => setLogin(e.target.value)} />
-        </div>
-        <div>
-          <label>Mot de passe</label>
-          <input
-            type="password"
-            value={motDePasse}
-            onChange={(e) => setMotDePasse(e.target.value)}
-          />
-        </div>
-        {erreur && <p>{erreur}</p>}
-        <button type="submit">Se connecter</button>
-      </form>
+    <div className="login">
+      <div className="login-image" />
+      <div className="login-formulaire">
+        <form onSubmit={handleSubmit}>
+          <h1>{NOM_HOTEL}</h1>
+          <h2>Connexion</h2>
+          <div>
+            <label>Login</label>
+            <input value={login} onChange={(e) => setLogin(e.target.value)} />
+          </div>
+          <div>
+            <label>Mot de passe</label>
+            <input
+              type="password"
+              value={motDePasse}
+              onChange={(e) => setMotDePasse(e.target.value)}
+            />
+          </div>
+          {erreur && <p>{erreur}</p>}
+          <button type="submit">Se connecter</button>
+        </form>
+      </div>
     </div>
   )
 }
