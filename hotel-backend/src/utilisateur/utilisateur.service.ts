@@ -5,12 +5,15 @@ import { Repository } from 'typeorm';
 import { CreateUtilisateurDto } from './dto/create-utilisateur.dto.js';
 import { UpdateUtilisateurDto } from './dto/update-utilisateur.dto.js';
 import { Utilisateur } from './entities/utilisateur.entity.js';
+import { Client } from '../client/entities/client.entity.js';
 
 @Injectable()
 export class UtilisateurService {
   constructor(
     @InjectRepository(Utilisateur)
     private readonly utilisateurRepository: Repository<Utilisateur>,
+    @InjectRepository(Client)
+    private readonly clientRepository: Repository<Client>,
   ) {}
 
   private sansMotDePasse(utilisateur: Utilisateur | null) {
@@ -52,14 +55,22 @@ export class UtilisateurService {
     return this.findOne(id);
   }
 
-    async login(login: string, mot_de_passe: string) {
+  async login(login: string, mot_de_passe: string) {
     const utilisateur = await this.utilisateurRepository.findOneBy({ login });
-    const valide =
-      utilisateur && (await bcrypt.compare(mot_de_passe, utilisateur.mot_de_passe));
-    if (!valide) {
+    if (
+      !utilisateur ||
+      !(await bcrypt.compare(mot_de_passe, utilisateur.mot_de_passe))
+    ) {
       throw new UnauthorizedException('Login ou mot de passe incorrect');
     }
-    return this.sansMotDePasse(utilisateur);
+    const resultat = this.sansMotDePasse(utilisateur);
+    if (utilisateur.role === 'client') {
+      const client = await this.clientRepository.findOne({
+        where: { utilisateur: { id_utilisateur: utilisateur.id_utilisateur } },
+      });
+      return { ...resultat, id_client: client?.id_client ?? null };
+    }
+    return resultat;
   }
 
   async remove(id: number) {

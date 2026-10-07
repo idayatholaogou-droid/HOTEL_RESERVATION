@@ -11,7 +11,6 @@ import { UpdateReservationDto } from './dto/update-reservation.dto.js';
 import { Reservation } from './entities/reservation.entity.js';
 import { Client } from '../client/entities/client.entity.js';
 import { Chambre } from '../chambre/entities/chambre.entity.js';
-import { Utilisateur } from '../utilisateur/entities/utilisateur.entity.js';
 
 @Injectable()
 export class ReservationService {
@@ -60,10 +59,8 @@ export class ReservationService {
     const reservation = this.reservationRepository.create({
       date_arrivee: dto.date_arrivee,
       date_depart: dto.date_depart,
-      ...(dto.statut && { statut: dto.statut }),
       client: { id_client: dto.id_client },
       chambre: { id_chambre: dto.id_chambre },
-      utilisateur: { id_utilisateur: dto.id_utilisateur },
     });
     const enregistree = await this.reservationRepository.save(reservation);
     return this.findOne(enregistree.id_reservation);
@@ -82,16 +79,13 @@ export class ReservationService {
     if (!reservation) {
       throw new NotFoundException('Réservation introuvable');
     }
-    const { id_client, id_chambre, id_utilisateur, ...data } = dto;
+    const { id_client, id_chambre, ...data } = dto;
     Object.assign(reservation, data);
     if (id_client !== undefined) {
       reservation.client = { id_client } as Client;
     }
     if (id_chambre !== undefined) {
       reservation.chambre = { id_chambre } as Chambre;
-    }
-    if (id_utilisateur !== undefined) {
-      reservation.utilisateur = { id_utilisateur } as Utilisateur;
     }
     this.verifierDates(reservation.date_arrivee, reservation.date_depart);
     if (reservation.statut !== 'annulee') {

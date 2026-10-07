@@ -4,5 +4,4 @@ export class CreateReservationDto {
   statut?: string;
   id_client: number;
   id_chambre: number;
-  id_utilisateur: number;
 }

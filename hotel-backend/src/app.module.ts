@@ -8,6 +8,7 @@ import { ChambreModule } from './chambre/chambre.module.js';
 import { ClientModule } from './client/client.module.js';
 import { UtilisateurModule } from './utilisateur/utilisateur.module.js';
 import { ReservationModule } from './reservation/reservation.module.js';
+import { PaiementModule } from './paiement/paiement.module.js';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ReservationModule } from './reservation/reservation.module.js';
     ClientModule,
     UtilisateurModule,
     ReservationModule,
+    PaiementModule,
   ],
   controllers: [AppController],
   providers: [AppService],
