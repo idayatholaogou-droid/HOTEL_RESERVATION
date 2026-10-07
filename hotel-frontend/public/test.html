@@ -2,19 +2,26 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Test JWT</title>
+  <title>Test Roles</title>
   <style>
     body { font-family: monospace; padding: 20px; }
     button { padding: 8px 16px; margin: 4px; cursor: pointer; }
     pre { background: #f0f0f0; padding: 10px; min-height: 100px; }
+    input { padding: 6px; margin: 4px; }
   </style>
 </head>
 <body>
-  <h2>Test JWT</h2>
+  <h2>Test Roles Guard</h2>
 
-  <button onclick="login()">1. Se connecter (récupérer token)</button>
-  <button onclick="testSansToken()">2. GET /utilisateur SANS token</button>
-  <button onclick="testAvecToken()">3. GET /utilisateur AVEC token</button>
+  <div>
+    Login : <input id="login" value="admin" />
+    Mot de passe : <input id="mdp" value="admin123" />
+  </div>
+
+  <button onclick="creerClient()">0. Créer utilisateur client</button>
+  <button onclick="login()">1. Se connecter</button>
+  <button onclick="sansToken()">2. GET /utilisateur SANS token</button>
+  <button onclick="avecToken()">3. GET /utilisateur AVEC token</button>
 
   <pre id="resultat">Résultat...</pre>
 
@@ -22,21 +29,42 @@
     const resultat = document.getElementById('resultat');
     let token = null;
 
+    async function creerClient() {
+      resultat.textContent = 'Création du client...';
+      const res = await fetch('http://localhost:3000/utilisateur', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nom: 'Dupont',
+          prenom: 'Jean',
+          login: 'client1',
+          mot_de_passe: 'client123',
+          role: 'client'
+        })
+      });
+      const data = await res.json();
+      resultat.textContent = 'Code : ' + res.status + '\n\n' +
+        JSON.stringify(data, null, 2);
+    }
+
     async function login() {
       resultat.textContent = 'Connexion...';
       const res = await fetch('http://localhost:3000/utilisateur/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login: 'admin', mot_de_passe: 'admin123' })
+        body: JSON.stringify({
+          login: document.getElementById('login').value,
+          mot_de_passe: document.getElementById('mdp').value
+        })
       });
       const data = await res.json();
       token = data.access_token;
       resultat.textContent = 'Code : ' + res.status + '\n\n' +
         JSON.stringify(data, null, 2) +
-        (token ? '\n\n✅ Token stocké en mémoire.' : '\n\n❌ Pas de token.');
+        (token ? '\n\n✅ Token stocké.' : '\n\n❌ Pas de token.');
     }
 
-    async function testSansToken() {
+    async function sansToken() {
       resultat.textContent = 'Appel SANS token...';
       const res = await fetch('http://localhost:3000/utilisateur');
       const data = await res.json();
@@ -44,9 +72,9 @@
         JSON.stringify(data, null, 2);
     }
 
-    async function testAvecToken() {
+    async function avecToken() {
       if (!token) {
-        resultat.textContent = '⚠️ Clique d\'abord sur le bouton 1 (login).';
+        resultat.textContent = '⚠️ Clique d\'abord sur le bouton 1.';
         return;
       }
       resultat.textContent = 'Appel AVEC token...';
