@@ -8,7 +8,6 @@ import {
 } from 'typeorm';
 import { Client } from '../../client/entities/client.entity.js';
 import { Chambre } from '../../chambre/entities/chambre.entity.js';
-import { Utilisateur } from '../../utilisateur/entities/utilisateur.entity.js';
 
 @Entity('reservation')
 export class Reservation {
@@ -21,7 +20,7 @@ export class Reservation {
   @Column({ type: 'date' })
   date_depart: string;
 
-  @Column({ default: 'confirmee' })
+  @Column({ default: 'en_attente' })
   statut: string;
 
   @CreateDateColumn()
@@ -34,8 +33,4 @@ export class Reservation {
   @ManyToOne(() => Chambre, { nullable: false, eager: true })
   @JoinColumn({ name: 'id_chambre' })
   chambre: Chambre;
-
-  @ManyToOne(() => Utilisateur, { nullable: false })
-  @JoinColumn({ name: 'id_utilisateur' })
-  utilisateur: Utilisateur;
 }

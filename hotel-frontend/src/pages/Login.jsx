@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { API_URL } from '../api.js'
 import { NOM_HOTEL } from '../hotel.js'
 
@@ -52,6 +52,9 @@ export default function Login() {
           </div>
           {erreur && <p>{erreur}</p>}
           <button type="submit">Se connecter</button>
+          <p className="lien-inscription">
+            Pas encore de compte ? <Link to="/inscription">Créer un compte</Link>
+          </p>
         </form>
       </div>
     </div>

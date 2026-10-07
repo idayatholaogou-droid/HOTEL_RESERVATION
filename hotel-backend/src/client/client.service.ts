@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
@@ -16,12 +20,17 @@ export class ClientService {
   ) {}
 
   async inscrire(dto: InscriptionDto) {
+    if (!dto.email || !dto.adresse) {
+      throw new BadRequestException("L'email et l'adresse sont obligatoires");
+    }
+    const email = dto.email.trim().toLowerCase();
+
     const existant = await this.clientRepository.manager.findOneBy(
       Utilisateur,
-      { login: dto.login },
+      { login: email },
     );
     if (existant) {
-      throw new ConflictException('Ce login est déjà utilisé');
+      throw new ConflictException('Cet email est déjà utilisé');
     }
     const mot_de_passe = await bcrypt.hash(dto.mot_de_passe, 10);
 
@@ -30,7 +39,7 @@ export class ClientService {
         manager.create(Utilisateur, {
           nom: dto.nom,
           prenom: dto.prenom,
-          login: dto.login,
+          login: email,
           mot_de_passe,
           role: 'client',
         }),
@@ -40,7 +49,7 @@ export class ClientService {
           nom: dto.nom,
           prenom: dto.prenom,
           telephone: dto.telephone,
-          email: dto.email,
+          email,
           adresse: dto.adresse,
           utilisateur,
         }),

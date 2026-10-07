@@ -6,6 +6,7 @@ import { CreateUtilisateurDto } from './dto/create-utilisateur.dto.js';
 import { UpdateUtilisateurDto } from './dto/update-utilisateur.dto.js';
 import { Utilisateur } from './entities/utilisateur.entity.js';
 import { Client } from '../client/entities/client.entity.js';
+import { AuthService } from '../auth/auth.service.js';
 
 @Injectable()
 export class UtilisateurService {
@@ -14,6 +15,7 @@ export class UtilisateurService {
     private readonly utilisateurRepository: Repository<Utilisateur>,
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
+    private readonly authService: AuthService,
   ) {}
 
   private sansMotDePasse(utilisateur: Utilisateur | null) {
@@ -63,14 +65,33 @@ export class UtilisateurService {
     ) {
       throw new UnauthorizedException('Login ou mot de passe incorrect');
     }
+
+    // ✅ Génération du token JWT
+    const token = await this.authService.genererToken({
+      id_utilisateur: utilisateur.id_utilisateur,
+      login: utilisateur.login,
+      role: utilisateur.role,
+    });
+
     const resultat = this.sansMotDePasse(utilisateur);
+
     if (utilisateur.role === 'client') {
       const client = await this.clientRepository.findOne({
-        where: { utilisateur: { id_utilisateur: utilisateur.id_utilisateur } },
+        where: {
+          utilisateur: { id_utilisateur: utilisateur.id_utilisateur },
+        },
       });
-      return { ...resultat, id_client: client?.id_client ?? null };
+      return {
+        ...resultat,
+        id_client: client?.id_client ?? null,
+        access_token: token,   // ✅ On renvoie le token
+      };
     }
-    return resultat;
+
+    return {
+      ...resultat,
+      access_token: token,     // ✅ On renvoie le token
+    };
   }
 
   async remove(id: number) {

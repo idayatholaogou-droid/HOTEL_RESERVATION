@@ -291,6 +291,7 @@ tbody tr:hover {
     linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.35)),
     url('/hotel.jpg') center / cover no-repeat,
     var(--marine);
+    
 }
 
 .login-formulaire {
@@ -350,3 +351,23 @@ tbody tr:hover {
   }
 }
 
+.site-header .logo {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #2563eb;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.lien-inscription {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.lien-inscription a {
+  color: var(--or-fonce);
+  font-weight: 600;
+}

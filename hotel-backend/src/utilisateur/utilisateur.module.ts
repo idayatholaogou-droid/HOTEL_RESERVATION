@@ -4,9 +4,13 @@ import { UtilisateurService } from './utilisateur.service.js';
 import { UtilisateurController } from './utilisateur.controller.js';
 import { Utilisateur } from './entities/utilisateur.entity.js';
 import { Client } from '../client/entities/client.entity.js';
+import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Utilisateur, Client])],
+  imports: [
+    TypeOrmModule.forFeature([Utilisateur, Client]),
+    AuthModule,   
+  ],
   controllers: [UtilisateurController],
   providers: [UtilisateurService],
 })

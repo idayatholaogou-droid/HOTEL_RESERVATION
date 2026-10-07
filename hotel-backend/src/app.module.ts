@@ -9,6 +9,7 @@ import { ClientModule } from './client/client.module.js';
 import { UtilisateurModule } from './utilisateur/utilisateur.module.js';
 import { ReservationModule } from './reservation/reservation.module.js';
 import { PaiementModule } from './paiement/paiement.module.js';
+import { AuthModule } from './auth/auth.module.js';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PaiementModule } from './paiement/paiement.module.js';
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
         autoLoadEntities: true,
+        logging: true,
         synchronize: true,
       }),
     }),
@@ -32,6 +34,7 @@ import { PaiementModule } from './paiement/paiement.module.js';
     UtilisateurModule,
     ReservationModule,
     PaiementModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
