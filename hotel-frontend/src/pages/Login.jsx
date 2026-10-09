@@ -24,8 +24,20 @@ export default function Login() {
         return
       }
       const utilisateur = await reponse.json()
+
+      //  Stocke le token + l'utilisateur
+      localStorage.setItem('token', utilisateur.access_token)
       localStorage.setItem('utilisateur', JSON.stringify(utilisateur))
-      navigate('/')
+
+      //  Redirection selon le rôle
+      const role = utilisateur.role
+      if (role === 'admin') {
+        navigate('/admin')
+      } else if (role === 'receptionniste') {
+        navigate('/planning')
+      } else {
+        navigate('/')   // client → accueil
+      }
     } catch {
       setErreur('Le serveur ne répond pas')
     }
@@ -40,7 +52,11 @@ export default function Login() {
           <h2>Connexion</h2>
           <div>
             <label>Login</label>
-            <input value={login} onChange={(e) => setLogin(e.target.value)} />
+            <input
+              value={login}
+              onChange={(e) => setLogin(e.target.value)}
+              required
+            />
           </div>
           <div>
             <label>Mot de passe</label>
@@ -48,6 +64,7 @@ export default function Login() {
               type="password"
               value={motDePasse}
               onChange={(e) => setMotDePasse(e.target.value)}
+              required
             />
           </div>
           {erreur && <p>{erreur}</p>}

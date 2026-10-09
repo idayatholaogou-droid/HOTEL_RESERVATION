@@ -26,6 +26,12 @@ export class Reservation {
   @CreateDateColumn()
   date_creation: Date;
 
+  @Column({ type: 'int', nullable: true })
+  note: number | null;
+
+  @Column({ type: 'text', nullable: true })
+  commentaire: string | null;
+
   @ManyToOne(() => Client, { nullable: false, eager: true })
   @JoinColumn({ name: 'id_client' })
   client: Client;

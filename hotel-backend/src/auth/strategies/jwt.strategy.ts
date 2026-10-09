@@ -7,6 +7,7 @@ export interface JwtPayload {
   sub: number;
   login: string;
   role: string;
+  id_client: number | null;
 }
 
 @Injectable()
@@ -19,15 +20,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  /**
-   * Appelée automatiquement par Passport SI le token est valide.
-   * Le retour est injecté dans `req.user`.
-   */
   async validate(payload: JwtPayload) {
     return {
       id_utilisateur: payload.sub,
       login: payload.login,
       role: payload.role,
+      id_client: payload.id_client,
     };
   }
 }

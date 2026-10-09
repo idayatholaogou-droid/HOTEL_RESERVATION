@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,6 +11,13 @@ import { CreatePaiementDto } from './dto/create-paiement.dto.js';
 import { Paiement } from './entities/paiement.entity.js';
 import { Reservation } from '../reservation/entities/reservation.entity.js';
 
+interface UtilisateurConnecte {
+  id_utilisateur: number;
+  login: string;
+  role: string;
+  id_client: number | null;
+}
+
 @Injectable()
 export class PaiementService {
   constructor(
@@ -17,17 +25,33 @@ export class PaiementService {
     private readonly paiementRepository: Repository<Paiement>,
   ) {}
 
-  async create(dto: CreatePaiementDto) {
+  async create(dto: CreatePaiementDto, utilisateur: UtilisateurConnecte) {
     if (!dto.mode) {
       throw new BadRequestException('Le mode de paiement est obligatoire');
     }
+
     return this.paiementRepository.manager.transaction(async (manager) => {
-      const reservation = await manager.findOneBy(Reservation, {
-        id_reservation: dto.id_reservation,
+      const reservation = await manager.findOne(Reservation, {
+        where: { id_reservation: dto.id_reservation },
+        relations: { client: true, chambre: { type: true } },
       });
+
       if (!reservation) {
         throw new NotFoundException('Réservation introuvable');
       }
+
+      // 🔒 Un client ne peut payer que SA réservation
+      if (utilisateur.role === 'client') {
+        if (utilisateur.id_client === null) {
+          throw new ForbiddenException('Client non identifié');
+        }
+        if (reservation.client.id_client !== utilisateur.id_client) {
+          throw new ForbiddenException(
+            "Vous ne pouvez pas payer la réservation d'un autre client",
+          );
+        }
+      }
+
       if (reservation.statut === 'annulee') {
         throw new BadRequestException('Cette réservation est annulée');
       }

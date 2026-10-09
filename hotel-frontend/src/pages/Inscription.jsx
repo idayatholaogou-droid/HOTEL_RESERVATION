@@ -23,6 +23,13 @@ export default function Inscription() {
   async function handleSubmit(e) {
     e.preventDefault()
     setErreur('')
+
+    // Vérification des mots de passe
+    if (champs.mot_de_passe !== champs.confirmation) {
+      setErreur('Les mots de passe ne correspondent pas')
+      return
+    }
+
     try {
       const reponse = await fetch(`${API_URL}/client/inscription`, {
         method: 'POST',
@@ -47,7 +54,9 @@ export default function Inscription() {
         navigate('/login')
         return
       }
+
       const utilisateur = await connexion.json()
+      localStorage.setItem('token', utilisateur.access_token)
       localStorage.setItem('utilisateur', JSON.stringify(utilisateur))
       navigate('/')
     } catch {

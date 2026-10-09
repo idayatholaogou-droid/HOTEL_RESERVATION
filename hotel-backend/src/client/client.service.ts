@@ -11,12 +11,14 @@ import { InscriptionDto } from './dto/inscription.dto.js';
 import { UpdateClientDto } from './dto/update-client.dto.js';
 import { Client } from './entities/client.entity.js';
 import { Utilisateur } from '../utilisateur/entities/utilisateur.entity.js';
+import { AlerteService } from '../alerte/alerte.service.js';
 
 @Injectable()
 export class ClientService {
   constructor(
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
+    private readonly alerteService: AlerteService,
   ) {}
 
   async inscrire(dto: InscriptionDto) {
@@ -24,6 +26,21 @@ export class ClientService {
       throw new BadRequestException("L'email et l'adresse sont obligatoires");
     }
     const email = dto.email.trim().toLowerCase();
+
+    // 🚨 DÉTECTION : tentative de forcer un rôle privilégié
+    const dtoBrut = dto as any;
+    if (
+      dtoBrut.role === 'admin' ||
+      dtoBrut.role === 'receptionniste' ||
+      dtoBrut.role === 'réceptionniste'
+    ) {
+      // 🔔 Crée une alerte pour l'admin
+      await this.alerteService.creer(
+        'tentative_role_privilégié',
+        `Tentative d'inscription avec le rôle "${dtoBrut.role}" depuis l'email "${email}". Le rôle a été forcé à "client".`,
+        email,
+      );
+    }
 
     const existant = await this.clientRepository.manager.findOneBy(
       Utilisateur,
@@ -41,7 +58,7 @@ export class ClientService {
           prenom: dto.prenom,
           login: email,
           mot_de_passe,
-          role: 'client',
+          role: 'client', // ⚠️ TOUJOURS forcé à 'client'
         }),
       );
       const client = await manager.save(
@@ -86,6 +103,33 @@ export class ClientService {
   async update(id: number, dto: UpdateClientDto) {
     await this.clientRepository.update(id, dto);
     return this.findOne(id);
+  }
+
+  async statistiques() {
+    const tous = await this.clientRepository.find({
+      relations: { utilisateur: true },
+      order: { id_client: 'DESC' },
+    });
+
+    const total = tous.length;
+
+    const debutMois = new Date();
+    debutMois.setDate(1);
+    debutMois.setHours(0, 0, 0, 0);
+
+    const nouveauxCeMois = tous.filter(
+      (c) => c.utilisateur && new Date(c.utilisateur.id_utilisateur) >= debutMois,
+    ).length;
+
+    const avecCompte = tous.filter((c) => c.utilisateur).length;
+    const sansCompte = total - avecCompte;
+
+    return {
+      total,
+      nouveauxCeMois,
+      avecCompte,
+      sansCompte,
+    };
   }
 
   async remove(id: number) {

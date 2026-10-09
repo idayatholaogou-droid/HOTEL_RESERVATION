@@ -10,6 +10,7 @@ import { UtilisateurModule } from './utilisateur/utilisateur.module.js';
 import { ReservationModule } from './reservation/reservation.module.js';
 import { PaiementModule } from './paiement/paiement.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { AdminModule } from './admin/admin.module.js';
 
 @Module({
   imports: [
@@ -24,7 +25,6 @@ import { AuthModule } from './auth/auth.module.js';
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
         autoLoadEntities: true,
-        logging: true,
         synchronize: true,
       }),
     }),
@@ -35,6 +35,7 @@ import { AuthModule } from './auth/auth.module.js';
     ReservationModule,
     PaiementModule,
     AuthModule,
+    AdminModule, 
   ],
   controllers: [AppController],
   providers: [AppService],

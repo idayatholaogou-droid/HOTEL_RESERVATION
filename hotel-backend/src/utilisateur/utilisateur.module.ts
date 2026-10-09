@@ -9,7 +9,7 @@ import { AuthModule } from '../auth/auth.module.js';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Utilisateur, Client]),
-    AuthModule,   
+    AuthModule,   //  Donne accès à AuthService
   ],
   controllers: [UtilisateurController],
   providers: [UtilisateurService],

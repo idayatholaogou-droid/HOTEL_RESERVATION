@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
@@ -26,7 +31,23 @@ export class UtilisateurService {
     return reste;
   }
 
-  async create(dto: CreateUtilisateurDto) {
+    async create(dto: CreateUtilisateurDto) {
+    // Vérifie que le login n'existe pas
+    const existant = await this.utilisateurRepository.findOneBy({
+      login: dto.login,
+    });
+    if (existant) {
+      throw new ConflictException('Ce login est déjà utilisé');
+    }
+
+    // Vérifie le rôle
+    const rolesValides = ['client', 'receptionniste', 'admin'];
+    if (!rolesValides.includes(dto.role)) {
+      throw new BadRequestException(
+        `Rôle invalide. Valeurs autorisées : ${rolesValides.join(', ')}`,
+      );
+    }
+
     const mot_de_passe = await bcrypt.hash(dto.mot_de_passe, 10);
     const utilisateur = this.utilisateurRepository.create({
       ...dto,
@@ -66,31 +87,31 @@ export class UtilisateurService {
       throw new UnauthorizedException('Login ou mot de passe incorrect');
     }
 
-    // ✅ Génération du token JWT
-    const token = await this.authService.genererToken({
-      id_utilisateur: utilisateur.id_utilisateur,
-      login: utilisateur.login,
-      role: utilisateur.role,
-    });
-
-    const resultat = this.sansMotDePasse(utilisateur);
-
+    // Récupère le client lié si c'est un client
+    let id_client: number | null = null;
     if (utilisateur.role === 'client') {
       const client = await this.clientRepository.findOne({
         where: {
           utilisateur: { id_utilisateur: utilisateur.id_utilisateur },
         },
       });
-      return {
-        ...resultat,
-        id_client: client?.id_client ?? null,
-        access_token: token,   // ✅ On renvoie le token
-      };
+      id_client = client?.id_client ?? null;
     }
+
+    // Génère le token avec id_client
+    const token = await this.authService.genererToken({
+      id_utilisateur: utilisateur.id_utilisateur,
+      login: utilisateur.login,
+      role: utilisateur.role,
+      id_client,
+    });
+
+    const resultat = this.sansMotDePasse(utilisateur);
 
     return {
       ...resultat,
-      access_token: token,     // ✅ On renvoie le token
+      id_client,
+      access_token: token,
     };
   }
 

@@ -20,6 +20,7 @@ import { Roles } from '../auth/decorators/roles.decorator.js';
 export class UtilisateurController {
   constructor(private readonly utilisateurService: UtilisateurService) {}
 
+  //  PUBLIC : login
   @Post('login')
   login(@Body() loginDto: LoginDto) {
     return this.utilisateurService.login(
@@ -28,12 +29,15 @@ export class UtilisateurController {
     );
   }
 
+  //  ADMIN : créer un utilisateur (avec n'importe quel rôle)
   @Post()
-  create(@Body() createUtilisateurDto: CreateUtilisateurDto) {
-    return this.utilisateurService.create(createUtilisateurDto);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  create(@Body() dto: CreateUtilisateurDto) {
+    return this.utilisateurService.create(dto);
   }
 
-  //  Protégée + réservée aux admins uniquement
+  //  ADMIN : lister tous les utilisateurs
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -41,20 +45,26 @@ export class UtilisateurController {
     return this.utilisateurService.findAll();
   }
 
+  //  ADMIN : voir un utilisateur
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   findOne(@Param('id') id: string) {
     return this.utilisateurService.findOne(+id);
   }
 
+  // ADMIN : modifier un utilisateur
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   update(
     @Param('id') id: string,
-    @Body() updateUtilisateurDto: UpdateUtilisateurDto,
+    @Body() dto: UpdateUtilisateurDto,
   ) {
-    return this.utilisateurService.update(+id, updateUtilisateurDto);
+    return this.utilisateurService.update(+id, dto);
   }
 
-  //  Protégée + réservée aux admins uniquement
+  // ADMIN : supprimer un utilisateur
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
